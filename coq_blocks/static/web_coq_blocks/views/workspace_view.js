@@ -2,6 +2,7 @@ import { DefinitionBlock, ConstructorBlock, AtomicBlock } from "../models/block.
 import { LAYOUT_CONFIG, constructorHorizontalResize, atomicHorizontalResize, verticalLayoutResize } from "../services/layout_utils.js";
 import { bindExportButtons, deleteBtnClassControl, settingsBtnClassControl } from "./block_ui_bindings.js";
 import { openLocalBlockSettings } from "./block_settings_view.js";
+import { renderBlock } from "./block_render.js";
 export default class WorkspaceView {
     constructor(store, snapManager, exportCallback) {
         this.ground = document.getElementById("ground");
@@ -65,16 +66,13 @@ export default class WorkspaceView {
 
         // 4. Add missing blocks
         blockObjects.forEach(block => {
-            // If the block is not in the DOM, add it
-            if (!this.ground.contains(block.element)) {
-                this.ground.appendChild(block.element);
-
-                // All blocks are draggable
-                block.element.classList.add("draggable");
-
-                if (!block.element.classList.contains("block")) {
-                    block.createElement();
+            // If the block is not rendered yet, render and append
+            if (!block.element) {
+                block.element = renderBlock(block);
+                if (block.zIndex !== null && block.zIndex !== undefined) {
+                    block.element.style.zIndex = block.zIndex;
                 }
+                this.ground.appendChild(block.element);
 
                 // Default block sizes
                 this.initializeBlockLayout(block);
@@ -88,12 +86,37 @@ export default class WorkspaceView {
                     block.element.setAttribute('data-x', visibleCenterX);
                     block.element.setAttribute('data-y', visibleCenterY);
                 }
+            }
+            // If the block needs full re-render (e.g., after parameter change)
+            else if (block.needsRenderUpdate) {
+                const oldEl = block.element;
+                const prevX = oldEl.getAttribute('data-x');
+                const prevY = oldEl.getAttribute('data-y');
+                const prevTransform = oldEl.style.transform;
 
+                oldEl.remove();
+
+                block.element = renderBlock(block);
+                if (block.zIndex !== null && block.zIndex !== undefined) {
+                    block.element.style.zIndex = block.zIndex;
+                }
+                this.ground.appendChild(block.element);
+
+                if (prevX !== null) block.element.setAttribute('data-x', prevX);
+                if (prevY !== null) block.element.setAttribute('data-y', prevY);
+                if (prevTransform) block.element.style.transform = prevTransform;
+
+                this.initializeBlockLayout(block);
+                block.needsRenderUpdate = false;
+                block.needsLayoutUpdate = false;
+            }
+            // If the block is not in the DOM (should be rare), add it
+            else if (!this.ground.contains(block.element)) {
+                this.ground.appendChild(block.element);
             }
             // If the block needs layout update (e.g., after parameter change)
             else if (block.needsLayoutUpdate) {
                 this.initializeBlockLayout(block);
-
                 block.needsLayoutUpdate = false;
             }
         });

@@ -121,6 +121,12 @@ export default class appStore extends Store {
         this.getState().forceExplicitAt = value;
     }
 
+    setDefinitionBlockName(block, newName) {
+        if (!block) return;
+        block.varName = newName;
+        this.notify();
+    }
+
     // ------------- Plug in block position ------------
 
     getDotYPosition() {
@@ -208,7 +214,7 @@ export default class appStore extends Store {
 
         // 4. Create instance via BlockFactory
         const newBlock = this.blockFactory.createAtomicBlock(typeItem.name, blockId, color);
-        newBlock.element.style.zIndex = this.getAndIncrementZIndex();
+        newBlock.zIndex = this.getAndIncrementZIndex();
 
         // 5. Save
         this.state.blockObjects.push(newBlock);
@@ -235,7 +241,7 @@ export default class appStore extends Store {
             blockId,
             color
         );
-        newBlock.element.style.zIndex = this.getAndIncrementZIndex();
+        newBlock.zIndex = this.getAndIncrementZIndex();
 
         // 5. Save
         this.state.blockObjects.push(newBlock);
@@ -245,7 +251,7 @@ export default class appStore extends Store {
     spawnDefinitionBlock() {
         const id = `defBlock:${this.state.definitionBlockCount++}`;
         const newBlock = this.blockFactory.createDefinitionBlock(id);
-        newBlock.element.style.zIndex = this.getAndIncrementZIndex();
+        newBlock.zIndex = this.getAndIncrementZIndex();
         this.state.blockObjects.push(newBlock);
         this.notify();
     }

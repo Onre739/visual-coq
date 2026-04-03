@@ -26,6 +26,7 @@ export default class InteractionController {
                         // 3. Update Z-Index for the WHOLE cluster
                         this.draggingCluster.forEach(block => {
                             const newZIndex = this.store.getAndIncrementZIndex();
+                            block.zIndex = newZIndex;
                             block.element.style.zIndex = newZIndex;
                         });
 

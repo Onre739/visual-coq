@@ -1,146 +1,13 @@
-import { formatType, resolveTypeParams } from "../services/type_utils.js";
-class Dot {
-    constructor(typeObj, parentBlockEl, color) {
-        this.typeObj = typeObj; // Data type object, JSON
-        this.type = typeObj;
-        this.color = color; // Color
-        this.parentBlockEl = parentBlockEl; // Reference to parent block
-        this.dotLabelWidth = 0; // Width of dot label for block width
-        this.element = document.createElement("div"); // DOM element
-    }
-
-    createElement() {
-        let dot = this.element;
-        this.parentBlockEl.appendChild(dot);
-
-        dot.setAttribute("class", "block-dot");
-        dot.style.backgroundColor = this.color;
-        dot.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16" style="display:inline;"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/></svg>';
-
-        let dotLabel = document.createElement("div");
-        dot.appendChild(dotLabel);
-
-        dotLabel.innerText = formatType(this.typeObj);
-        dotLabel.style.position = "absolute";
-        dotLabel.style.left = "25px";
-        dotLabel.style.top = "0";
-        dotLabel.style.whiteSpace = "nowrap";
-
-        this.dotLabelWidth = dotLabel.offsetWidth;
-        this.element = dot;
-    }
-}
-class Plug {
-    constructor(typeObj, parentBlockEl, index, plugPosition, color) {
-        this.typeObj = typeObj; // Data type object, or string "any" (exception, SnapManager -> areTypesEqual handles it)
-        this.type = typeObj;
-        this.parentBlockEl = parentBlockEl; // Reference to parent block
-        this.index = index; // Order
-        this.plugPosition = plugPosition; // Plug position
-        this.color = color;
-
-        this.width = 0; // Width = plug + plug label
-        this.element = document.createElement("div"); // DOM element
-        this.occupied = false; // If plug is occupied
-    }
-
-    createElement() {
-        let plug = this.element;
-        this.parentBlockEl.appendChild(plug);
-        plug.setAttribute("class", "block-plug");
-        plug.style.top = this.plugPosition + "px";
-        plug.style.backgroundColor = this.color;
-
-        // Label pro plug
-        let typeLabel = document.createElement("div");
-        plug.appendChild(typeLabel);
-
-        typeLabel.innerText = formatType(this.typeObj);
-        typeLabel.style.position = "absolute";
-        typeLabel.style.right = "120%";
-        typeLabel.style.top = "2px";
-        typeLabel.style.whiteSpace = "nowrap";
-
-        this.width = typeLabel.offsetWidth + plug.offsetWidth;
-        this.element = plug;
-    }
-}
+import { resolveTypeParams } from "../services/type_utils.js";
 
 class BaseBlock {
     constructor(id, color) {
         this.id = id;
         this.color = color;
-        this.element = document.createElement("div"); // DOM element
+        this.element = null; // DOM element (assigned by renderer)
         this.needsLayoutUpdate = false; // Flag to indicate if layout update is needed after parameter change
-
-    }
-
-    createElement() {
-        throw new Error("Must be implemented by subclass");
-    }
-
-    /**
-     * Initializes common block features:
-     * - Main DIV attributes (id, class, style)
-     * - Delete Button 
-     */
-    initBlockElement() {
-        // 1. Setup Main Element
-        this.element.setAttribute("id", this.id);
-        this.element.className = "block draggable";
-        this.element.style.backgroundColor = this.color;
-
-        // 2. Setup Delete Button
-        let deleteBtn = document.createElement("div");
-        deleteBtn.className = "delete-block-btn";
-
-        deleteBtn.style.display = "flex";
-        deleteBtn.style.opacity = "1";
-        deleteBtn.style.cursor = "pointer";
-        deleteBtn.title = "Delete this block";
-
-        deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
-        </svg>`;
-
-        deleteBtn.addEventListener("mousedown", (e) => e.stopPropagation());
-        this.element.appendChild(deleteBtn);
-
-        // 3. Setup Settings Button
-        let settingBtn = document.createElement("div");
-        settingBtn.className = "settings-block-btn";
-        settingBtn.title = "Nastavení parametrů instance bloku";
-
-        settingBtn.innerHTML = `
-            <svg class="text-dark" style="cursor: pointer; transition: transform 0.2s;"
-                 data-bs-toggle="modal" 
-                 data-bs-target="#settingModal" 
-                 onmouseover="this.style.transform='scale(1.1)'" 
-                 onmouseout="this.style.transform='scale(1)'"
-                 xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.86z"/>
-            </svg>`;
-
-
-        settingBtn.addEventListener("mousedown", (e) => e.stopPropagation());
-
-        this.element.appendChild(settingBtn);
-    }
-
-    /**
-     * Helper to create and append the block title
-     * @param {string} text - Title text
-     */
-    addBlockName(text) {
-        let blockNameEl = document.createElement("div");
-        blockNameEl.setAttribute("class", "blockName");
-        blockNameEl.style.position = "absolute";
-        blockNameEl.style.top = "5px";
-        blockNameEl.style.left = "30px";
-        blockNameEl.style.fontWeight = "bold";
-        blockNameEl.style.whiteSpace = "nowrap";
-        blockNameEl.innerText = text;
-        this.element.appendChild(blockNameEl);
+        this.needsRenderUpdate = false; // Flag to indicate DOM re-render is needed
+        this.zIndex = null; // z-index assigned by store, applied by view
     }
 }
 
@@ -149,59 +16,7 @@ export class DefinitionBlock extends BaseBlock {
         super(id, "rgb(128, 128, 128)");
         this.plugObjects = [];
         this.varName = varName; // Name of the variable for definition
-    }
-
-    createElement() {
-        // Initialize block element
-        this.initBlockElement();
-
-        // Block name
-        this.addBlockName("Definition");
-        this.element.classList.add("definition-block-" + this.varName);
-
-        let newBlock = this.element
-
-        // Export button
-        let exportIcon = document.createElement("div");
-        exportIcon.className = "export-icon";
-        exportIcon.style.position = "absolute";
-        exportIcon.style.bottom = "5px";
-        exportIcon.style.left = "5px";
-        exportIcon.style.cursor = "pointer";
-        exportIcon.style.color = "#000";
-        exportIcon.style.transition = "transform 0.2s, color 0.2s";
-        exportIcon.title = "Export this definition";
-
-        exportIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-            <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-        </svg>`;
-
-        exportIcon.onmouseover = () => {
-            exportIcon.style.transform = "scale(1.2)";
-            exportIcon.style.color = "#000";
-        };
-        exportIcon.onmouseout = () => {
-            exportIcon.style.transform = "scale(1)";
-            exportIcon.style.color = "#000";
-        };
-
-        // To prevent drag on export icon click
-        exportIcon.addEventListener("mousedown", (e) => e.stopPropagation());
-        newBlock.appendChild(exportIcon);
-
-        // ------ PLUGS
-
-        let aktPlug = 0; // Current plug
         this.plugsCount = 1;
-
-        // Create plug object; string "any" is exception (string not object), SnapManager -> areTypesEqual handles it
-        let plugObject = new Plug("any", newBlock, aktPlug, 0, this.color);
-
-        // Create plug element for DOM
-        plugObject.createElement()
-
-        this.plugObjects.push(plugObject);
     }
 }
 
@@ -300,58 +115,9 @@ export class ConstructorBlock extends BaseBlock {
         // Re-calculate return type with new parameters
         this.calculateReturnType();
 
-        // Re-create the block's DOM elements to reflect the new parameters (especially Dot & Plug)
-        this.element.innerHTML = "";
-        this.createElement();
-
-        // Need to re-render the block in the workspace after updating parameters
+        // Mark block for re-render in the workspace after updating parameters
+        this.needsRenderUpdate = true;
         this.needsLayoutUpdate = true;
-    }
-
-    createElement() {
-        this.initBlockElement();
-        this.addBlockName(this.blockName);
-        this.element.classList.add("constructor-block-" + this.constructorName);
-
-        let newBlock = this.element;
-
-        // 1. Dot
-        let dot = new Dot(this.returnTypeObj, newBlock, this.color);
-        dot.createElement(); // DOM element
-        this.dotObject = dot;
-
-        // 2. Plugs
-        // Map for substituting type parameters
-        const typeParamMap = this.getTypeParamMap();
-
-        // Plug count
-        let allPlugsData = [];
-        const args = this.constructorObj.args || [];
-
-        args.forEach(arg => {
-            const resolvedType = resolveTypeParams(arg.type, typeParamMap);
-
-            // Binder style: (n m : nat)
-            if (arg.names && arg.names.length > 0) {
-                arg.names.forEach(name => {
-                    allPlugsData.push({ type: resolvedType, label: name });
-                });
-            }
-
-            // Arrow style: nat -> bool
-            else {
-                allPlugsData.push({ type: resolvedType, label: "" });
-            }
-        });
-
-        this.plugsCount = allPlugsData.length;
-
-        // Plug elements 
-        allPlugsData.forEach((plugData, index) => {
-            let plugObject = new Plug(plugData.type, newBlock, index, 0, this.color);
-            plugObject.createElement();
-            this.plugObjects.push(plugObject);
-        });
     }
 }
 
@@ -365,78 +131,12 @@ export class AtomicBlock extends BaseBlock {
         this.plugObjects = [];
 
     }
-
-    createElement() {
-        // Initialize block element
-        this.initBlockElement();
-        this.element.classList.add("atomic-block-" + this.typeObj.name);
-
-        //let newBlock = this.element;
-
-        // Block name
-        this.addBlockName(this.typeObj.name);
-
-        let inputContainer = this.createInputUI();
-        inputContainer.style.position = "absolute";
-        inputContainer.style.right = "10px";
-        inputContainer.style.top = "30px";
-
-        this.element.appendChild(inputContainer);
-
-        // Dot
-        let dot = new Dot(this.typeObj, this.element, this.color);
-        dot.createElement(); // DOM element
-        this.dotObject = dot;
-    }
-
-    // Default text input (for the case where you create a generic AtomicBlock)
-    createInputUI() {
-        let inputEl = document.createElement("input");
-        inputEl.setAttribute("class", "form-control p-0");
-        inputEl.setAttribute("maxlength", "12");
-        inputEl.setAttribute("type", "text");
-        // inputEl.setAttribute("id", "atomicInput");
-        inputEl.addEventListener("input", (e) => this.value = e.target.value);
-        return inputEl;
-    }
 }
 
 export class NatBlock extends AtomicBlock {
     constructor(id, color) {
         super("nat", id, color); // Type name is "nat"
         this.value = "0"; // Default value
-    }
-
-    createInputUI() {
-        let inputEl = document.createElement("input");
-        inputEl.setAttribute("type", "text");
-        inputEl.setAttribute("inputmode", "numeric"); // For mobiles numeric keyboard
-        inputEl.setAttribute("maxlength", "14");
-        inputEl.setAttribute("class", "form-control p-0");
-        inputEl.value = "0";
-        this.value = "0";
-
-        inputEl.addEventListener("input", (e) => {
-            // Only numbers allowed
-            let cleaned = e.target.value.replace(/\D/g, '');
-
-            // Remove leading zeros (e.g., "01" -> "1", "007" -> "7")
-            cleaned = cleaned.replace(/^0+(?=\d)/, '');
-
-            e.target.value = cleaned;
-
-            // If value is empty "" use 0
-            this.value = cleaned === "" ? "0" : cleaned;
-        });
-
-        inputEl.addEventListener("blur", (e) => {
-            if (e.target.value === "") {
-                e.target.value = "0";
-                this.value = "0";
-            }
-        });
-
-        return inputEl;
     }
 }
 
@@ -445,40 +145,11 @@ export class BoolBlock extends AtomicBlock {
         super("bool", id, color); // Type name is "bool"
         this.value = "true"; // Deafault value
     }
-
-    createInputUI() {
-        let selectEl = document.createElement("select");
-        selectEl.setAttribute("class", "form-select p-0");
-        selectEl.style.backgroundPosition = "right 2px center";
-
-        selectEl.innerHTML = `
-            <option value="true">true</option>
-            <option value="false">false</option>
-        `;
-
-        selectEl.addEventListener("change", (e) => {
-            this.value = e.target.value;
-        });
-        return selectEl;
-    }
 }
 
 export class StringBlock extends AtomicBlock {
     constructor(id, color) {
         super("string", id, color);
         this.value = '""'; // Default value is an empty string in Coq
-    }
-
-    createInputUI() {
-        let inputEl = document.createElement("input");
-        inputEl.setAttribute("type", "text");
-        inputEl.setAttribute("maxlength", "30");
-        inputEl.setAttribute("class", "form-control p-0");
-
-        inputEl.addEventListener("input", (e) => {
-            // Automatically wrap the input value in quotes for Coq string syntax
-            this.value = `"${e.target.value}"`;
-        });
-        return inputEl;
     }
 }

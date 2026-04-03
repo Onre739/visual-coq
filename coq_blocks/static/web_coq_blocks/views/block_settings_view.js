@@ -43,7 +43,7 @@ export function openLocalBlockSettings(block, store, printAlert) {
                 return;
             }
 
-            block.varName = newName;
+            store.setDefinitionBlockName(block, newName);
             printAlert(`Name of definition block ${block.id} updated to "${newName}".`, "success");
         });
     }
