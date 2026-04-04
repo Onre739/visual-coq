@@ -1,4 +1,5 @@
 import { DefinitionBlock } from "../models/block.js";
+import { debugError } from "./debug.js";
 
 export default class SnapManager {
     constructor() {
@@ -266,7 +267,7 @@ export default class SnapManager {
         // Check if we processed all blocks
         let flat = allOrdered.flat();
         if (flat.length !== snappedBlocks.length) {
-            console.error("ORDERING BLOCK FAIL");
+            debugError("ORDERING BLOCK FAIL");
         }
 
         return allOrdered;

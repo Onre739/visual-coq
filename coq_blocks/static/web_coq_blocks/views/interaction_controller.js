@@ -1,3 +1,5 @@
+import { debugLog } from "../services/debug.js";
+
 export default class InteractionController {
     constructor(store, snapManager) {
         this.store = store;
@@ -6,6 +8,9 @@ export default class InteractionController {
         this.draggingCluster = [];
     }
 
+    /**
+     * Initializes interact.js drag configuration and listeners.
+     */
     initializeAutomaticResizeConfig() {
         interact('.draggable').draggable({
             inertia: false,
@@ -33,10 +38,10 @@ export default class InteractionController {
                         // 4. Recalculate snap targets (Only for the head block!)
                         // Find new snap targets silently (without notify)
                         this.store.recalculateSnapTargetsSilent(movedBlockObject);
-                        console.log("Updated snap targets:", this.store.getSnapTargets());
+                        debugLog("Updated snap targets:", this.store.getSnapTargets());
                     }
                     else {
-                        console.log("Moved block not found in appStore");
+                        debugLog("Moved block not found in appStore");
                         this.draggingCluster = [];
                     }
                 },
@@ -74,7 +79,7 @@ export default class InteractionController {
                         this.draggingCluster = [];
                     }
 
-                    console.log('Drag ended', event);
+                    debugLog('Drag ended', event);
                 }
             },
             modifiers: [

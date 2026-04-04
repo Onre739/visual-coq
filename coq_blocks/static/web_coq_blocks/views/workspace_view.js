@@ -19,6 +19,9 @@ export default class WorkspaceView {
         });
     }
 
+    /**
+     * Main render entrypoint triggered by store updates.
+     */
     updateUI() {
         const blockObjects = this.store.getBlockObjects();
         const currentSnaps = this.store.getSnappedBlocks();
@@ -46,7 +49,10 @@ export default class WorkspaceView {
 
     }
 
-    // Automatically syncs the blocks in the DOM with the blocks in the Store
+    /**
+     * Automatically syncs the blocks in the DOM with the blocks in the Store.
+     * @param {Array} blockObjects
+     */
     syncBlocksWithDOM(blockObjects) {
         // 1. Get all current DOM blocks
         const domBlocks = Array.from(this.ground.querySelectorAll('.block'));
@@ -233,8 +239,9 @@ export default class WorkspaceView {
     }
 
     /**
-     * Prints the export result into the export result list.
-     * @param {string} str - The COQ string to display.
+     * Prints alert message.
+     * @param {string} msg - The alert message.
+     * @param {string} type - The type of alert (e.g., "danger", "success").
      */
     printAlert(msg, type) {
         let alertPlaceholder = document.getElementById("alertPlaceholder");

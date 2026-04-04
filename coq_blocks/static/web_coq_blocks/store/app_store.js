@@ -1,4 +1,5 @@
 import { Store } from './store.js';
+import { debugLog } from '../services/debug.js';
 
 // Design pattern: Singleton Store for application state management
 export default class appStore extends Store {
@@ -73,11 +74,14 @@ export default class appStore extends Store {
         return this.getState().definitionBlockCount;
     }
 
+    /**
+     * Returns and increments z-index counter for new blocks.
+     * @returns {number}
+     */
     getAndIncrementZIndex() {
         const state = this.getState();
         const z = state.zIndexCount;
         state.zIndexCount += 1;
-        // this.notify();
         return z;
     }
 
@@ -117,17 +121,24 @@ export default class appStore extends Store {
         return this.getState().forceExplicitAt;
     }
 
+    /**
+     * Sets whether exported code forces explicit arguments with "@".
+     * @param {boolean} value
+     */
     setForceExplicitAt(value) {
         this.getState().forceExplicitAt = value;
     }
 
+    /**
+     * Updates the name for a definition block instance.
+     * @param {Object} block
+     * @param {string} newName
+     */
     setDefinitionBlockName(block, newName) {
         if (!block) return;
         block.varName = newName;
         this.notify();
     }
-
-    // ------------- Plug in block position ------------
 
     getDotYPosition() {
 
@@ -142,8 +153,6 @@ export default class appStore extends Store {
 
     }
 
-    // ------------------------------------------------------------------------
-    // -------------- SavedTypeManager + SidebarView --------------
     loadSavedTypes() {
         const data = this.savedTypeManager.loadData();
         this.state.savedTypes = data;
@@ -168,6 +177,10 @@ export default class appStore extends Store {
         return atomicTypeObj
     }
 
+    /**
+     * Add a new type via SavedTypeManager to localStorage and update state.
+     * @param {Object} newTypeObj
+     */
     addSavedType(newTypeObj) {
         let typeParams = newTypeObj.typeParameters || [];
 
@@ -187,7 +200,7 @@ export default class appStore extends Store {
         // Save to localStorage via SavedTypeManager
         const newSavedType = this.savedTypeManager.addItem(
             this.state.savedTypes,
-            dataToSave, // Transformed data
+            dataToSave,
         );
 
         // State update
@@ -195,12 +208,20 @@ export default class appStore extends Store {
         this.notify();
     }
 
+    /**
+     * Removes a saved type from localStorage.
+     * @param {string} id
+     */
     removeSavedType(id) {
         const newSavedTypes = this.savedTypeManager.removeItem(this.state.savedTypes, id);
         this.state.savedTypes = newSavedTypes;
         this.notify();
     }
 
+    /**
+     * Spawns a new atomic block instance for a saved atomic type.
+     * @param {Object} typeItem
+     */
     spawnAtomicBlock(typeItem) {
         // 1. Counter
         let currentCount = this.state.atomicBlockCount.get(typeItem.id) || 0;
@@ -221,7 +242,14 @@ export default class appStore extends Store {
         this.notify();
     }
 
-    spawnClasicBlock(constructor, typeName, typeParameters, typeId) {
+    /**
+     * Spawns a new constructor block instance.
+     * @param {Object} constructor
+     * @param {string} typeName
+     * @param {Array} typeParameters
+     * @param {string} typeId
+     */
+    spawnClassicBlock(constructor, typeName, typeParameters, typeId) {
         // 1. Counter
         let currentCount = this.state.typeBlockCount.get(typeId) || 0;
         this.state.typeBlockCount.set(typeId, currentCount + 1);
@@ -248,6 +276,9 @@ export default class appStore extends Store {
         this.notify();
     }
 
+    /**
+     * Spawns a new definition block instance.
+     */
     spawnDefinitionBlock() {
         const id = `defBlock:${this.state.definitionBlockCount++}`;
         const newBlock = this.blockFactory.createDefinitionBlock(id);
@@ -256,6 +287,9 @@ export default class appStore extends Store {
         this.notify();
     }
 
+    /**
+     * Clears all blocks and resets the playground state.
+     */
     clearPlayground() {
         this.state.blockObjects = [];
         this.state.snappedBlocks = [];
@@ -264,10 +298,16 @@ export default class appStore extends Store {
         this.state.atomicBlockCount.clear();
         this.state.definitionBlockCount = 0;
         this.state.snapTargets.length = 0;
+        this.state.zIndexCount = 1;
 
         this.notify();
     }
 
+    /**
+     * Updates color of a saved type and propagates to existing blocks.
+     * @param {string} typeId
+     * @param {string} newColor
+     */
     updateTypeColor(typeId, newColor) {
         // 1. Update savedTypes
         const newSavedTypes = this.state.savedTypes.map(item => {
@@ -313,14 +353,13 @@ export default class appStore extends Store {
             }
         });
 
-
         this.notify();
     }
 
     /**
      * Change parameters for a specific block instance on the canvas.
-     * @param {Block} block - The block instance to update
-     * @param {Array} newParameters - New parameters
+     * @param {Block} block
+     * @param {Array} newParameters
      */
     updateBlockInstanceParameters(block, newParameters) {
         if (block) {
@@ -330,8 +369,10 @@ export default class appStore extends Store {
         }
     }
 
-    // -------------- InteractionController + WorkspaceView --------------
-
+    /**
+     * Removes a block from state and cleans related snap targets/snaps.
+     * @param {Block} blockToRemove
+     */
     removeBlock(blockToRemove) {
         const state = this.state;
 
@@ -355,6 +396,10 @@ export default class appStore extends Store {
         this.notify();
     }
 
+    /**
+     * Recalculates snap targets without notifying subscribers.
+     * @param {Block} movedBlockObject
+     */
     recalculateSnapTargetsSilent(movedBlockObject) {
         const state = this.state;
 
@@ -372,6 +417,10 @@ export default class appStore extends Store {
         // NO this.notify() !!!
     }
 
+    /**
+     * Handles logic after a block is dropped (snapping, targets update).
+     * @param {Block} movedBlock
+     */
     handleBlockDrop(movedBlock) {
         const state = this.state;
         const prevSnaps = state.snappedBlocks; // Old snaps
@@ -394,7 +443,7 @@ export default class appStore extends Store {
         const hasChanged = !this.snapManager.areSnapsEqual(prevSnaps, nextSnaps);
 
         if (!hasChanged) {
-            console.log("Drop without changes - skip update");
+            debugLog("Drop without changes - skip update");
 
             // Still need to update plug occupancy, just in case
             this.snapManager.updatePlugOccupancy(state.blockObjects, state.snappedBlocks);
@@ -415,7 +464,7 @@ export default class appStore extends Store {
 
     /**
      * Recursively finds the block and all its children.
-     * @param {Object} rootBlock - The block being dragged.
+     * @param {Object} rootBlock
      * @returns {Array} Array of Block objects (the cluster).
      */
     getSubtree(rootBlock) {
@@ -434,7 +483,10 @@ export default class appStore extends Store {
         return cluster;
     }
 
-    // ------------------------------------------------------------------------
+    /**
+     * Saves new definitions as new types to localStorage and updates state.
+     * @param {Object} data 
+     */
     importDefinitions(data) {
         if (data) {
             data.forEach(newType => {

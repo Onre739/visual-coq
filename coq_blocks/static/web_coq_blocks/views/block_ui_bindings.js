@@ -1,5 +1,10 @@
 import { DefinitionBlock, ConstructorBlock } from "../models/block.js";
 
+/**
+ * Binds export button listeners for rendered blocks.
+ * @param {Array} blockObjects
+ * @param {Function} exportCallback
+ */
 export function bindExportButtons(blockObjects, exportCallback) {
     blockObjects.forEach(block => {
         const icon = block.element.querySelector(".export-icon");
@@ -20,6 +25,12 @@ export function bindExportButtons(blockObjects, exportCallback) {
     });
 }
 
+/**
+ * Controls delete button visibility and click handlers.
+ * @param {Array} notSnappedBlocks
+ * @param {Array} blockObjects
+ * @param {Function} removeBlockCallback
+ */
 export function deleteBtnClassControl(notSnappedBlocks, blockObjects, removeBlockCallback) {
     // 1. Set for quick lookup
     const notSnappedSet = new Set(notSnappedBlocks);
@@ -59,6 +70,12 @@ export function deleteBtnClassControl(notSnappedBlocks, blockObjects, removeBloc
     });
 }
 
+/**
+ * Controls settings button visibility and click handlers.
+ * @param {Array} notSnappedBlocks
+ * @param {Array} blockObjects
+ * @param {Function} openLocalBlockSettings
+ */
 export function settingsBtnClassControl(notSnappedBlocks, blockObjects, openLocalBlockSettings) {
 
     // 1. Set for quick lookup

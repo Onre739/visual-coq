@@ -1,5 +1,10 @@
 export default class DefinitionLoader {
 
+    /**
+     * Loads and parses a Coq definition from backend.
+     * @param {string} definitionString
+     * @returns {Promise<Object>}
+     */
     async load(definitionString) {
         // Value check
         if (!definitionString || definitionString.trim() === "") {

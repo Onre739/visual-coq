@@ -35,6 +35,11 @@ export default class BlockFactory {
         }
     }
 
+    /**
+     * Creates a new definition block instance.
+     * @param {string} id
+     * @returns {DefinitionBlock}
+     */
     createDefinitionBlock(id) {
         const varName = "def"; // Name of the variable for definition: Definition def: nat := ......
         return new DefinitionBlock(varName, id);

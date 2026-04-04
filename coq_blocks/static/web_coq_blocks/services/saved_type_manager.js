@@ -3,18 +3,29 @@ export default class SavedTypeManager {
         this.STORAGE_KEY = "myData";
     }
 
-    // Load data from localStorage
+    /**
+     * Loads saved types from localStorage.
+     * @returns {Array}
+     */
     loadData() {
         const data = localStorage.getItem(this.STORAGE_KEY);
         return data ? JSON.parse(data) : [];
     }
 
-    // Save data to localStorage
+    /**
+     * Saves types to localStorage.
+     * @param {Array} data
+     */
     saveData(data) {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
     }
 
-    // Method for adding (called by Store)
+    /**
+     * Adds a new type and persists it.
+     * @param {Array} dataArray
+     * @param {Object} newItem
+     * @returns {Array}
+     */
     addItem(dataArray, newItem) {
         const newData = [...dataArray, newItem];
 
@@ -22,7 +33,12 @@ export default class SavedTypeManager {
         return newData;
     }
 
-    // Method for removing (called by Store)
+    /**
+     * Removes a type by id and persists the change.
+     * @param {Array} dataArray
+     * @param {string} id
+     * @returns {Array}
+     */
     removeItem(dataArray, id) {
         const newData = dataArray.filter(item => item.id !== id);
 

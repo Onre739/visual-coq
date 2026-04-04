@@ -1,6 +1,9 @@
 import { AtomicBlock, BoolBlock, ConstructorBlock, DefinitionBlock, NatBlock, StringBlock } from "../models/block.js";
 import { formatType, resolveTypeParams } from "../services/type_utils.js";
 
+/**
+ * DOM element representing a block output dot.
+ */
 class Dot {
     constructor(typeObj, parentBlockEl, color) {
         this.typeObj = typeObj; // Data type object, JSON
@@ -11,6 +14,9 @@ class Dot {
         this.element = document.createElement("div"); // DOM element
     }
 
+    /**
+     * Creates and appends DOM for the dot.
+     */
     createElement() {
         let dot = this.element;
         this.parentBlockEl.appendChild(dot);
@@ -33,6 +39,9 @@ class Dot {
     }
 }
 
+/**
+ * DOM element representing a block input plug.
+ */
 class Plug {
     constructor(typeObj, parentBlockEl, index, plugPosition, color) {
         this.typeObj = typeObj; // Data type object, or string "any" (exception, SnapManager -> areTypesEqual handles it)
@@ -47,6 +56,9 @@ class Plug {
         this.occupied = false; // If plug is occupied
     }
 
+    /**
+     * Creates and appends DOM for the plug.
+     */
     createElement() {
         let plug = this.element;
         this.parentBlockEl.appendChild(plug);
@@ -69,6 +81,11 @@ class Plug {
     }
 }
 
+/**
+ * Initializes common block DOM structure (root, buttons).
+ * @param {Object} block
+ * @param {HTMLElement} el
+ */
 function initBlockElement(block, el) {
     el.setAttribute("id", block.id);
     el.className = "block draggable";
@@ -104,6 +121,11 @@ function initBlockElement(block, el) {
     el.appendChild(settingBtn);
 }
 
+/**
+ * Adds a title label to a block element.
+ * @param {HTMLElement} el
+ * @param {string} text
+ */
 function addBlockName(el, text) {
     let blockNameEl = document.createElement("div");
     blockNameEl.setAttribute("class", "blockName");
@@ -116,6 +138,11 @@ function addBlockName(el, text) {
     el.appendChild(blockNameEl);
 }
 
+/**
+ * Renders a DefinitionBlock to a DOM element.
+ * @param {DefinitionBlock} block
+ * @returns {HTMLElement}
+ */
 function renderDefinitionBlock(block) {
     const el = document.createElement("div");
     initBlockElement(block, el);
@@ -160,6 +187,11 @@ function renderDefinitionBlock(block) {
     return el;
 }
 
+/**
+ * Renders a ConstructorBlock to a DOM element.
+ * @param {ConstructorBlock} block
+ * @returns {HTMLElement}
+ */
 function renderConstructorBlock(block) {
     const el = document.createElement("div");
     initBlockElement(block, el);
@@ -199,6 +231,11 @@ function renderConstructorBlock(block) {
     return el;
 }
 
+/**
+ * Creates an input element for an AtomicBlock (type-specific).
+ * @param {AtomicBlock} block
+ * @returns {HTMLElement}
+ */
 function createAtomicInput(block) {
     if (block instanceof NatBlock) {
         let inputEl = document.createElement("input");
@@ -260,6 +297,11 @@ function createAtomicInput(block) {
     return inputEl;
 }
 
+/**
+ * Renders an AtomicBlock to a DOM element.
+ * @param {AtomicBlock} block
+ * @returns {HTMLElement}
+ */
 function renderAtomicBlock(block) {
     const el = document.createElement("div");
     initBlockElement(block, el);
@@ -280,6 +322,11 @@ function renderAtomicBlock(block) {
     return el;
 }
 
+/**
+ * Renders a block to a DOM element based on its type.
+ * @param {DefinitionBlock|ConstructorBlock|AtomicBlock} block
+ * @returns {HTMLElement}
+ */
 export function renderBlock(block) {
     if (block instanceof DefinitionBlock) return renderDefinitionBlock(block);
     if (block instanceof ConstructorBlock) return renderConstructorBlock(block);

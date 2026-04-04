@@ -2,10 +2,19 @@ import { DefinitionBlock, AtomicBlock } from "../models/block.js";
 import { formatType } from "./type_utils.js";
 
 export default class COQExporter {
+    /**
+     * @param {Object} store
+     */
     constructor(store) {
         this.store = store;
     }
 
+    /**
+     * Exports all definition blocks to a single Coq string.
+     * @param {Array} blockObjects
+     * @param {Array} snappedBlocks
+     * @returns {string}
+     */
     export(blockObjects, snappedBlocks) {
 
         let traversalResult = this.DFSTraverse(blockObjects, snappedBlocks);
@@ -13,6 +22,12 @@ export default class COQExporter {
         return traversalResult.output;
     }
 
+    /**
+     * Exports a single definition block to a Coq string.
+     * @param {Object} rootBlock
+     * @param {Array} snappedBlocks
+     * @returns {string}
+     */
     exportSingle(rootBlock, snappedBlocks) {
 
         // Object tree
@@ -23,6 +38,12 @@ export default class COQExporter {
         return finalOutput;
     }
 
+    /**
+     * Depth-first traversal of all definition roots.
+     * @param {Array} blockObjects
+     * @param {Array} snappedBlocks
+     * @returns {{result: Array, output: string}}
+     */
     DFSTraverse(blockObjects, snappedBlocks) {
         let definitions = [];
 
@@ -51,7 +72,12 @@ export default class COQExporter {
         };
     }
 
-    // Recursive traversal of a block and its snapped children
+    /**
+     * Recursive traversal of a block and its snapped children.
+     * @param {Object} block
+     * @param {Array} snappedBlocks
+     * @returns {Object}
+     */
     traverseBlock(block, snappedBlocks) {
         // Object for tree representation for return
         let ret = {
@@ -80,7 +106,12 @@ export default class COQExporter {
         return ret;
     }
 
-    // Recursive stringification of the definition object
+    /**
+     * Recursive stringification of the definition object.
+     * @param {Object} def
+     * @param {number} i
+     * @returns {string}
+     */
     stringifyDefinition(def, i) {
         let children = def.children.map(p => this.stringifyDefinition(p, i + 1));
 

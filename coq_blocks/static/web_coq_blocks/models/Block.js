@@ -1,6 +1,14 @@
 import { resolveTypeParams } from "../services/type_utils.js";
+import { debugLog } from "../services/debug.js";
 
+/**
+ * Base class for all blocks in the workspace.
+ */
 class BaseBlock {
+    /**
+     * @param {string} id
+     * @param {string} color
+     */
     constructor(id, color) {
         this.id = id;
         this.color = color;
@@ -11,7 +19,14 @@ class BaseBlock {
     }
 }
 
+/**
+ * Represents a definition block (e.g., `Definition def := ...`).
+ */
 export class DefinitionBlock extends BaseBlock {
+    /**
+     * @param {string} varName
+     * @param {string} id
+     */
     constructor(varName, id) {
         super(id, "rgb(128, 128, 128)");
         this.plugObjects = [];
@@ -20,6 +35,9 @@ export class DefinitionBlock extends BaseBlock {
     }
 }
 
+/**
+ * Represents a constructor block for an inductive type.
+ */
 export class ConstructorBlock extends BaseBlock {
     /**
      * @param {Object} constructorObj - JSON Object representing the constructor
@@ -31,11 +49,11 @@ export class ConstructorBlock extends BaseBlock {
     constructor(constructorObj, typeName, typeParameters, id, color) {
         super(id, color);
 
-        this.typeName = typeName; // Name of the data type
-        this.constructorName = constructorObj.name; // Name of the constructor
-        this.typeParameters = typeParameters; // Parameters of the data type
+        this.typeName = typeName;
+        this.constructorName = constructorObj.name;
+        this.typeParameters = typeParameters;
         this.constructorObj = constructorObj;
-        this.blockName = `${typeName} : ${constructorObj.name}`; // Name of entire block
+        this.blockName = `${typeName} : ${constructorObj.name}`;
         this.returnTypeObj = null;
 
         this.plugObjects = [];
@@ -44,12 +62,12 @@ export class ConstructorBlock extends BaseBlock {
 
         this.calculateReturnType();
 
-        console.log("ConstructorBlock: Created for constructor:", this.constructorObj, "of type:", typeName, "with typeParameters:", typeParameters);
+        debugLog("ConstructorBlock: Created for constructor:", this.constructorObj, "of type:", typeName, "with typeParameters:", typeParameters);
     }
 
     /**
-     * Helper method: Creates and returns a map of type parameters for substitution (e.g., { "X": "nat" })
-     * @return {Object} Map of type parameters
+     * Creates a map of type parameters for substitution (e.g., { "X": "nat" }).
+     * @return {Object}
      */
     getTypeParamMap() {
         const typeParamMap = {};
@@ -64,7 +82,7 @@ export class ConstructorBlock extends BaseBlock {
     }
 
     /**
-     * Helper method: Calculates and sets the return type of the block (Dot)
+     * Calculates and sets the return type of the block (Dot).
      */
     calculateReturnType() {
         // If explicit returnType is given, use it, otherwise build from typeName and typeParameters
@@ -103,8 +121,8 @@ export class ConstructorBlock extends BaseBlock {
     }
 
     /**
-     * Updates the block's type parameters and refreshes the plugs and dot accordingly
-     * @param {Array} newParams - New type parameters (e.g., [{ "X": "nat" }])
+     * Updates the block's type parameters and marks it for re-render.
+     * @param {Array} newParams
      */
     updatePolymorphicParams(newParams) {
         this.typeParameters = newParams;
@@ -121,7 +139,15 @@ export class ConstructorBlock extends BaseBlock {
     }
 }
 
+/**
+ * Represents an atomic block (base class for nat/bool/string).
+ */
 export class AtomicBlock extends BaseBlock {
+    /**
+     * @param {string} typeName
+     * @param {string} id
+     * @param {string} color
+     */
     constructor(typeName, id, color) {
         super(id, color);
 
@@ -133,23 +159,44 @@ export class AtomicBlock extends BaseBlock {
     }
 }
 
+/**
+ * Atomic block for natural numbers.
+ */
 export class NatBlock extends AtomicBlock {
+    /**
+     * @param {string} id
+     * @param {string} color
+     */
     constructor(id, color) {
         super("nat", id, color); // Type name is "nat"
         this.value = "0"; // Default value
     }
 }
 
+/**
+ * Atomic block for booleans.
+ */
 export class BoolBlock extends AtomicBlock {
+    /**
+     * @param {string} id
+     * @param {string} color
+     */
     constructor(id, color) {
         super("bool", id, color); // Type name is "bool"
         this.value = "true"; // Deafault value
     }
 }
 
+/**
+ * Atomic block for strings.
+ */
 export class StringBlock extends AtomicBlock {
+    /**
+     * @param {string} id
+     * @param {string} color
+     */
     constructor(id, color) {
-        super("string", id, color);
+        super("string", id, color); // Type name is "string"
         this.value = '""'; // Default value is an empty string in Coq
     }
 }

@@ -1,6 +1,13 @@
 import { DefinitionBlock, ConstructorBlock } from "../models/block.js";
 import { formatType } from "../services/type_utils.js";
+import { debugLog } from "../services/debug.js";
 
+/**
+ * Opens local settings modal for a given block.
+ * @param {DefinitionBlock|ConstructorBlock} block
+ * @param {Object} store
+ * @param {Function} printAlert
+ */
 export function openLocalBlockSettings(block, store, printAlert) {
     if (block instanceof DefinitionBlock) {
         // Title
@@ -165,7 +172,7 @@ export function openLocalBlockSettings(block, store, printAlert) {
         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
 
         newSaveBtn.addEventListener("click", () => {
-            console.log("Ukládám parametry pouze pro blok:", block.id);
+            debugLog("Save params for block:", block.id);
 
             if (typeParameters && typeParameters.length > 0) {
                 // A) Collect updated parameters from the selects
@@ -190,7 +197,7 @@ export function openLocalBlockSettings(block, store, printAlert) {
                 const paramsChanged = JSON.stringify(typeParameters) !== JSON.stringify(updatedParameters);
 
                 if (paramsChanged) {
-                    console.log(`Parameters changed for local block ${block.id} changed.`);
+                    debugLog(`Parameters changed for local block ${block.id} changed.`);
 
                     store.updateBlockInstanceParameters(block, updatedParameters);
                 }
@@ -199,6 +206,13 @@ export function openLocalBlockSettings(block, store, printAlert) {
     }
 }
 
+/**
+ * Builds list of available types for parameter selection.
+ * @param {ConstructorBlock} block
+ * @param {Array} typeParameters
+ * @param {Object} store
+ * @returns {{optionsList: Array, smartSuggestionsMap: Map}}
+ */
 function getAvailableTypes(block, typeParameters, store) {
     const atomicTypes = store.getAtomicTypes();
     const allBlocksOnCanvas = store.getBlockObjects();

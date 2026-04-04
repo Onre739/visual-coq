@@ -1,4 +1,9 @@
+import { debugError, debugLog } from "../services/debug.js";
+
 export default class SidebarView {
+    /**
+     * @param {Object} store
+     */
     constructor(store) {
         this.store = store;
 
@@ -22,6 +27,9 @@ export default class SidebarView {
         });
     }
 
+    /**
+     * Re-renders sidebar lists when saved types change.
+     */
     updateUI() {
         const savedTypes = this.store.getSavedTypes();
         const currentJson = JSON.stringify(savedTypes);
@@ -44,8 +52,12 @@ export default class SidebarView {
 
     }
 
+    /**
+     * Renders a single atomic type item in the sidebar.
+     * @param {Object} item
+     */
     renderAtomicItem(item) {
-        console.log("Rendering atomic type in sidebar:", item);
+        debugLog("Rendering atomic type in sidebar:", item);
 
         const li = document.createElement("li");
         li.className = "list-group-item d-flex justify-content-between align-items-center border-0 pe-2";
@@ -116,6 +128,10 @@ export default class SidebarView {
         });
     }
 
+    /**
+     * Renders a single inductive type item in the sidebar.
+     * @param {Object} item
+     */
     renderClasicItem(item) {
         const newTypeObj = item;
         const typeName = newTypeObj.name;
@@ -272,7 +288,7 @@ export default class SidebarView {
             const spawnBtn = listItem.querySelector(".spawn-cons-btn");
             spawnBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                this.store.spawnClasicBlock(constructor, typeName, typeParameters, id);
+                this.store.spawnClassicBlock(constructor, typeName, typeParameters, id);
             });
 
             listGroup.appendChild(listItem);
@@ -289,6 +305,10 @@ export default class SidebarView {
     /**
      * Prints the export result into the export result list.
      * @param {string} str - The COQ string to display.
+     */
+    /**
+     * Appends an export result to the sidebar list.
+     * @param {string} str
      */
     showExportResult(str) {
         let li = document.createElement("li");
@@ -312,7 +332,7 @@ export default class SidebarView {
                 }, 500);
 
             } catch (err) {
-                console.error("Copy failed: ", err);
+                debugError("Copy failed: ", err);
             }
         });
 

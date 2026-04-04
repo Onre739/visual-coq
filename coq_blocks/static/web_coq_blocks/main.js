@@ -7,6 +7,13 @@ import InteractionController from './views/interaction_controller.js';
 import SnapManager from './services/snap_manager.js';
 import WorkspaceView from './views/workspace_view.js';
 import SidebarView from './views/sidebar_view.js';
+import { debugLog, debugError } from "./services/debug.js";
+
+const MESSAGES = {
+    exportSuccess: "Export successful!!",
+    globalSettingsUpdated: "Global settings updated.",
+    definitionLoaded: "Definition loaded successfully."
+};
 
 // ----- Initialize store and main components -----
 const snapManager = new SnapManager();
@@ -28,14 +35,14 @@ const handleSingleExport = (rootBlock) => {
 
         if (coqString) {
             sidebarView.showExportResult(coqString);
-            workspaceView.printAlert("Export successful!!", "success");
+            workspaceView.printAlert(MESSAGES.exportSuccess, "success");
 
             const showExportsBtn = document.getElementById('showExportsBtn');
             if (showExportsBtn) showExportsBtn.click();
         }
 
     } catch (error) {
-        console.error(error);
+        debugError(error);
         workspaceView.printAlert(error.message, "danger");
     }
 };
@@ -95,7 +102,7 @@ if (globalSettingModal) {
 if (globalSettingModalSaveBtn && forceExplicitAtCheckbox) {
     globalSettingModalSaveBtn.addEventListener("click", () => {
         store.setForceExplicitAt(forceExplicitAtCheckbox.checked);
-        workspaceView.printAlert("Global settings updated.", "success");
+        workspaceView.printAlert(MESSAGES.globalSettingsUpdated, "success");
     });
 }
 
@@ -126,18 +133,16 @@ loadBtn.addEventListener("click", async () => {
 
     try {
         const data = await definitionLoader.load(definitionText);
-        console.log("Loaded definition data:", data);
+        debugLog("Loaded definition data:", data);
 
         store.importDefinitions(data);
         defInput.value = "";
-        console.log("Definitions loaded successfully.");
-        workspaceView.printAlert("Definition loaded successfully.", "success");
+        workspaceView.printAlert(MESSAGES.definitionLoaded, "success");
 
     } catch (error) {
-        console.error("Error loading definition:", error);
-        //alert("Failed to load definition. See console for details.");
+        debugError("Error loading definition:", error);
         workspaceView.printAlert(error.message, "danger");
     }
 });
 
-console.log("Application initialized.");
+debugLog("Application initialized.");
