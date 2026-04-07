@@ -14,8 +14,8 @@ export default class SnapManager {
      */
     areTypesEqual(typeA, typeB) {
 
-        // 1. Handling "any"
-        if (typeA === "any" || typeB === "any") return true;
+        // 1. Handling "*" (wildcard)
+        if (typeA === "*" || typeB === "*") return true;
 
         // 2. Handling null/undefined
         if (!typeA || !typeB) return false;

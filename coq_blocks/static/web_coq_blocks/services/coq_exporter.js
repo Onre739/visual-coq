@@ -10,19 +10,6 @@ export default class COQExporter {
     }
 
     /**
-     * Exports all definition blocks to a single Coq string.
-     * @param {Array} blockObjects
-     * @param {Array} snappedBlocks
-     * @returns {string}
-     */
-    export(blockObjects, snappedBlocks) {
-
-        let traversalResult = this.DFSTraverse(blockObjects, snappedBlocks);
-
-        return traversalResult.output;
-    }
-
-    /**
      * Exports a single definition block to a Coq string.
      * @param {Object} rootBlock
      * @param {Array} snappedBlocks
@@ -36,40 +23,6 @@ export default class COQExporter {
         let finalOutput = this.stringifyDefinition(defObj, 0) + ".";
 
         return finalOutput;
-    }
-
-    /**
-     * Depth-first traversal of all definition roots.
-     * @param {Array} blockObjects
-     * @param {Array} snappedBlocks
-     * @returns {{result: Array, output: string}}
-     */
-    DFSTraverse(blockObjects, snappedBlocks) {
-        let definitions = [];
-
-        // Find all root blocks (DefinitionBlocks)
-        let rootBlocks = blockObjects.filter(
-            block => block instanceof DefinitionBlock
-        );
-
-        if (rootBlocks.length === 0) {
-            throw new Error("Export failed: No Definition blocks found.");
-        }
-
-        // For each root block, get the object tree
-        rootBlocks.forEach(rootBlock => {
-            let defObj = this.traverseBlock(rootBlock, snappedBlocks);
-            definitions.push(defObj);
-        });
-
-        // Build output strings
-        let outputStrings = definitions.map(def => this.stringifyDefinition(def, 0) + ".");
-        let finalOutput = outputStrings.join("\n");
-
-        return {
-            result: definitions,
-            output: finalOutput
-        };
     }
 
     /**

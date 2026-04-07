@@ -34,12 +34,12 @@ antlr4-parse COQ.g4 prog -tree # výpis stromu do konzole
 
 
 // ------ DOCKER ------
-docker build -t bakalarka .
-docker run -p 8000:8000 bakalarka
+docker build -t visual-coq .
+docker run -p 8000:8000 visual-coq
 docker images
 
 // odstranění image
-docker rmi bakalarka:latest
+docker rmi visual-coq:latest
 
 // stop containeru
 docker stop e8bbcdebb61c

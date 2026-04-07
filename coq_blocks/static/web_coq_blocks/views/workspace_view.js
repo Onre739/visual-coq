@@ -2,7 +2,7 @@ import { DefinitionBlock, ConstructorBlock, AtomicBlock } from "../models/block.
 import { LAYOUT_CONFIG, constructorHorizontalResize, atomicHorizontalResize, verticalLayoutResize } from "../services/layout_utils.js";
 import { bindExportButtons, deleteBtnClassControl, settingsBtnClassControl } from "./block_ui_bindings.js";
 import { openLocalBlockSettings } from "./block_settings_view.js";
-import { renderBlock } from "./block_render.js";
+import { renderBlock, refreshBlockMeasurements } from "./block_render.js";
 export default class WorkspaceView {
     constructor(store, snapManager, exportCallback) {
         this.ground = document.getElementById("ground");
@@ -70,7 +70,7 @@ export default class WorkspaceView {
             }
         });
 
-        // 4. Add missing blocks
+        // 4. Add missing blocks + handle updates for existing blocks
         blockObjects.forEach(block => {
             // If the block is not rendered yet, render and append
             if (!block.element) {
@@ -79,6 +79,10 @@ export default class WorkspaceView {
                     block.element.style.zIndex = block.zIndex;
                 }
                 this.ground.appendChild(block.element);
+                // Dot and plug objects contain measurements gained with offset which is only available after element is in the DOM
+                // renderBlock uses offset, but returns element before it is in DOM => measurements are not correct
+                // After appending to the DOM, we can refresh measurements and update layout
+                refreshBlockMeasurements(block);
 
                 // Default block sizes
                 this.initializeBlockLayout(block);
@@ -107,6 +111,7 @@ export default class WorkspaceView {
                     block.element.style.zIndex = block.zIndex;
                 }
                 this.ground.appendChild(block.element);
+                refreshBlockMeasurements(block);
 
                 if (prevX !== null) block.element.setAttribute('data-x', prevX);
                 if (prevY !== null) block.element.setAttribute('data-y', prevY);

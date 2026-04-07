@@ -7,18 +7,21 @@ from .MyVisitor import MyVisitor
 from antlr4.error.ErrorListener import ErrorListener
 
 def process_coq_code(string):
-    # Fast test for empty input
     if not string or string.strip() == "":
         raise ValueError("Empty input data")
 
     input_stream = InputStream(string)
+    
+    error_listener = CollectingErrorListener()
 
     lexer = COQLexer(input_stream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(error_listener)
+    
     stream = CommonTokenStream(lexer)
 
     parser = COQParser(stream)
     parser.removeErrorListeners()
-    error_listener = CollectingErrorListener()
     parser.addErrorListener(error_listener)
 
     tree = parser.prog()

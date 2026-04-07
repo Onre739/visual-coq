@@ -1,5 +1,9 @@
 import { debugError, debugLog } from "../services/debug.js";
 
+function toDomSafe(value) {
+    return String(value).replace(/[^a-zA-Z0-9_]/g, "-");
+}
+
 export default class SidebarView {
     /**
      * @param {Object} store
@@ -149,7 +153,7 @@ export default class SidebarView {
         headerEl.className = "accordion-header d-flex align-items-center bg-light-subtle pe-2";
 
         headerEl.innerHTML = `
-            <button id="accordion-button-${typeName}"
+            <button id="accordion-button-${toDomSafe(typeName)}"
                     class="accordion-button collapsed px-3 py-2 bg-light-subtle text-success flex-grow-1" 
                     type="button" 
                     data-bs-toggle="collapse" 
@@ -219,7 +223,7 @@ export default class SidebarView {
             let colorInput = document.createElement("input");
             colorInput.type = "color";
             colorInput.className = "form-control form-control-color mb-3";
-            colorInput.value = item.color || "#808080"; // Actual color
+            colorInput.value = item.color || "rgb(151, 151, 151)"; // Actual color
             colorInput.title = "Choose your color";
 
             let colorDiv = document.createElement("div");
@@ -274,7 +278,7 @@ export default class SidebarView {
             listItem.innerHTML = `
                 <div>${constructor.name}</div>
                 
-                <svg id="spawn-${typeName}-${constructor.name}-btn"
+                <svg id="spawn-${toDomSafe(typeName)}-${toDomSafe(constructor.name)}-btn"
                      class="spawn-cons-btn text-success" 
                      style="cursor: pointer; transition: transform 0.1s, color 0.2s;"
                      onmouseover="this.classList.replace('text-success', 'text-success-emphasis'); this.style.transform='scale(1.1)'" 
@@ -319,16 +323,54 @@ export default class SidebarView {
         li.style.cursor = "pointer";
         li.title = "Click to copy to clipboard";
 
-        li.addEventListener("click", async () => {
+        li.addEventListener("click", async (event) => {
             try {
                 await navigator.clipboard.writeText(li.textContent);
 
                 // Visual feedback for successful copy
-                const originalBg = li.style.backgroundColor;
-                li.style.backgroundColor = "#d4edda"; // Bootstrap success
+                const baseBg = li.dataset.baseBg || getComputedStyle(li).backgroundColor;
+                li.dataset.baseBg = baseBg;
+                li.style.backgroundColor = "#d4edda";
 
-                setTimeout(() => {
-                    li.style.backgroundColor = originalBg;
+                // Small tooltip near cursor
+                if (li._copyTooltip) {
+                    li._copyTooltip.remove();
+                    li._copyTooltip = null;
+                }
+
+                const tooltip = document.createElement("div");
+                tooltip.textContent = "Copied";
+                tooltip.style.position = "fixed";
+                tooltip.style.left = `${event.clientX + 8}px`;
+                tooltip.style.top = `${event.clientY - 8}px`;
+                tooltip.style.padding = "2px 6px";
+                tooltip.style.fontSize = "0.75em";
+                tooltip.style.backgroundColor = "#198754";
+                tooltip.style.color = "#fff";
+                tooltip.style.borderRadius = "4px";
+                tooltip.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+                tooltip.style.pointerEvents = "none";
+                tooltip.style.zIndex = "9999";
+                tooltip.style.opacity = "0";
+                tooltip.style.transition = "opacity 0.15s";
+                document.body.appendChild(tooltip);
+
+                requestAnimationFrame(() => {
+                    tooltip.style.opacity = "1";
+                });
+
+                li._copyTooltip = tooltip;
+
+                if (li._copyTimeout) {
+                    clearTimeout(li._copyTimeout);
+                }
+
+                li._copyTimeout = setTimeout(() => {
+                    li.style.backgroundColor = baseBg;
+                    tooltip.style.opacity = "0";
+                    setTimeout(() => tooltip.remove(), 150);
+                    li._copyTooltip = null;
+                    li._copyTimeout = null;
                 }, 500);
 
             } catch (err) {

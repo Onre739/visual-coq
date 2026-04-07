@@ -28,7 +28,7 @@ export class DefinitionBlock extends BaseBlock {
      * @param {string} id
      */
     constructor(varName, id) {
-        super(id, "rgb(128, 128, 128)");
+        super(id, "rgb(151, 151, 151)");
         this.plugObjects = [];
         this.varName = varName; // Name of the variable for definition
         this.plugsCount = 1;

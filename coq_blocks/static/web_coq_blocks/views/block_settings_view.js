@@ -30,6 +30,19 @@ export function openLocalBlockSettings(block, store, printAlert) {
         nameInput.value = block.varName || "";
         settingModalBody.appendChild(nameInput);
 
+        // Enforce Coq identifier rules in real-time
+        nameInput.addEventListener("input", () => {
+            const raw = nameInput.value;
+            // Allowed: [a-zA-Z_][a-zA-Z0-9_']*
+            let sanitized = raw.replace(/[^a-zA-Z0-9_']/g, "");
+            if (sanitized.length > 0 && !/^[a-zA-Z_]/.test(sanitized)) {
+                sanitized = sanitized.replace(/^[^a-zA-Z_]+/, "");
+            }
+            if (sanitized !== raw) {
+                nameInput.value = sanitized;
+            }
+        });
+
         // Note
         let note = document.createElement("div");
         note.innerText = "Note: Changing the name will affect name of definition when exporting.";
@@ -153,7 +166,7 @@ export function openLocalBlockSettings(block, store, printAlert) {
             optionsList.forEach(optVal => {
                 let option = document.createElement("option");
                 option.value = optVal;
-                option.innerText = optVal === "" ? "-- Vyberte typ --" : optVal;
+                option.innerText = optVal === "" ? "-- Select type --" : optVal;
 
                 if (storedValue === optVal) {
                     option.selected = true;

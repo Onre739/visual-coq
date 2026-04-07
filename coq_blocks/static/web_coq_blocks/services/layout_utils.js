@@ -78,18 +78,12 @@ export function atomicHorizontalResize(block) {
     // 3. Get widths of other elements
     const nameWidth = nameEl ? nameEl.offsetWidth : 0;
 
-    // 4. Get dot label width
-    let dotLabelWidth = 0;
-    if (block.dotObject && block.dotObject.dotLabelWidth) {
-        dotLabelWidth = block.dotObject.dotLabelWidth;
-    }
-
-    // 5. Calculate final block width
-    const widthForDot = dotLabelWidth;
-    const widthForInput = newWidthLimited + 20; // Input + padding of block 
+    // 4. Calculate final block width
+    const inputLeft = activeEl.offsetLeft || 0;
+    const widthForInput = inputLeft + newWidthLimited + 10; // Input + right padding of block
     const widthForName = nameWidth + 60; // Name + padding
 
-    const blockWidth = Math.max(widthForName, widthForInput, widthForDot + widthForInput);
+    const blockWidth = Math.max(widthForName, widthForInput);
 
     block.element.style.width = `${blockWidth}px`;
 }

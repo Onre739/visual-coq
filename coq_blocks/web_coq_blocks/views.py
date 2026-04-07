@@ -2,7 +2,6 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import traceback
 
 from antlr import COQMain 
 from block_classes import *
@@ -27,7 +26,6 @@ def new_definition(request):
         # Serialization to JSON
         json_data = [obj.to_dict() for obj in parsed_objects]
 
-        # Return the JSON response
         return Response(json_data, status=status.HTTP_200_OK)
 
     except Exception as e:

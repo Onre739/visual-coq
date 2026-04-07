@@ -70,7 +70,7 @@ const clearPlaygroundBtn = document.getElementById("clearPlaygroundBtn");
 
 if (clearPlaygroundBtn) {
     clearPlaygroundBtn.addEventListener("click", () => {
-        if (confirm("Opravdu chcete smazat celou plochu? Tato akce je nevratná.")) {
+        if (confirm("Do you really want to clear the playground? This action cannot be undone.")) {
             store.clearPlayground();
         }
     });

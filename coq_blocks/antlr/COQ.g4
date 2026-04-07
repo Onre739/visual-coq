@@ -14,7 +14,6 @@ constructor: ('|')? NAME ':' arrowParam* type_expression    # ArrowEntry
            ;
 
 arrowParam: type_expression '->';
-
 binderParam: '(' NAME+ ':' type_expression ')'; 
 
 type_expression: type_term+;
@@ -22,5 +21,5 @@ type_term: NAME                    # TypeTermName
          | '(' type_expression ')' # TypeTermParens    
     ;
 
-NAME: [a-zA-Z]+[0-9]*[_]?[a-zA-Z]*[0-9]*[']*; // Umožňuje _ jednou nebo vůbec a ' na konci názvu
-WS: [ \t\r\n]+ -> skip; // Ignorování bílých znaků (mezery, tabulátory, nové řádky)
+NAME: [a-zA-Z_][a-zA-Z0-9_']* ;
+WS: [ \t\r\n]+ -> skip;

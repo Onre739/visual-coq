@@ -7,7 +7,7 @@ db.sqlite3
 *.tar
 
 # Ignorovat pycache
-__pycache__
-
+__pycache__/
+*.pyc
 
 .env

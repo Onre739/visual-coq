@@ -26,9 +26,9 @@ load_dotenv(BASE_DIR.parent / '.env')
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() == "true"
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = ['localhost', 'ondra.peterek.net']
+ALLOWED_HOSTS = ['localhost', 'ondra.peterek.net', '127.0.0.1']
 
 # Application definition
 

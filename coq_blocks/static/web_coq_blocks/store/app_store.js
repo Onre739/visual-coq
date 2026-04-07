@@ -159,6 +159,11 @@ export default class appStore extends Store {
         this.notify();
     }
 
+    /**
+     * Create a new atomic type object from a name and return it.
+     * @param {String} name 
+     * @returns {Object}
+     */
     createAtomicType(name) {
         // ID generation; crypto.randomUUID() or basic fallback
         const newId = self.crypto && self.crypto.randomUUID ? self.crypto.randomUUID() : 'atomic-' + Math.random().toString(36).substr(2, 9);
@@ -168,7 +173,7 @@ export default class appStore extends Store {
             id: newId,
             name: name,
             sort: "atomic",
-            color: "#808080",
+            color: "rgb(151, 151, 151)",
             typeParameters: [], // No type parameters
             constructors: [],    // No constructors
             fullText: ""
@@ -231,7 +236,7 @@ export default class appStore extends Store {
         const blockId = `${typeItem.id}:${currentCount}`;
 
         // 3. Color
-        const color = typeItem.color || "#808080";
+        const color = typeItem.color || "rgb(151, 151, 151)";
 
         // 4. Create instance via BlockFactory
         const newBlock = this.blockFactory.createAtomicBlock(typeItem.name, blockId, color);
@@ -259,7 +264,8 @@ export default class appStore extends Store {
 
         // 3. Color
         const typeItem = this.state.savedTypes.find(t => t.id === typeId);
-        const color = typeItem ? (typeItem.color || "#808080") : "#808080";
+        const defaultColor = "rgb(151, 151, 151)";
+        const color = typeItem ? (typeItem.color || defaultColor) : defaultColor;
 
         // 4. Create instance via BlockFactory
         const newBlock = this.blockFactory.createConstructorBlock(

@@ -56,7 +56,7 @@ class CoqInductiveType:
     type_parameters: List[str] = field(default_factory=list)
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     sort: str = "clasic"    # "clasic" |  "atomic"
-    color: str = "#808080"
+    color: str = "rgb(151, 151, 151)"
     full_text: str = ""      # Full original text of the inductive type
 
     def to_dict(self) -> Dict[str, Any]:

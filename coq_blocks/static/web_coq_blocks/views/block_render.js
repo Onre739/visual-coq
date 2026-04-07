@@ -1,6 +1,10 @@
 import { AtomicBlock, BoolBlock, ConstructorBlock, DefinitionBlock, NatBlock, StringBlock } from "../models/block.js";
 import { formatType, resolveTypeParams } from "../services/type_utils.js";
 
+function toDomSafe(value) {
+    return String(value).replace(/[^a-zA-Z0-9_]/g, "-");
+}
+
 /**
  * DOM element representing a block output dot.
  */
@@ -44,7 +48,7 @@ class Dot {
  */
 class Plug {
     constructor(typeObj, parentBlockEl, index, plugPosition, color) {
-        this.typeObj = typeObj; // Data type object, or string "any" (exception, SnapManager -> areTypesEqual handles it)
+        this.typeObj = typeObj; // Data type object, or string "*" (exception, SnapManager -> areTypesEqual handles it)
         this.type = typeObj;
         this.parentBlockEl = parentBlockEl; // Reference to parent block
         this.index = index; // Order
@@ -147,7 +151,7 @@ function renderDefinitionBlock(block) {
     const el = document.createElement("div");
     initBlockElement(block, el);
     addBlockName(el, "Definition");
-    el.classList.add("definition-block-" + block.varName);
+    el.classList.add("definition-block-" + toDomSafe(block.varName));
 
     // Export button
     let exportIcon = document.createElement("div");
@@ -180,7 +184,7 @@ function renderDefinitionBlock(block) {
 
     // Plug
     block.plugObjects = [];
-    const plugObject = new Plug("any", el, 0, 0, block.color);
+    const plugObject = new Plug("*", el, 0, 0, block.color);
     plugObject.createElement();
     block.plugObjects.push(plugObject);
 
@@ -196,7 +200,7 @@ function renderConstructorBlock(block) {
     const el = document.createElement("div");
     initBlockElement(block, el);
     addBlockName(el, block.blockName);
-    el.classList.add("constructor-block-" + block.constructorName);
+    el.classList.add("constructor-block-" + toDomSafe(block.constructorName));
 
     // Dot
     const dot = new Dot(block.returnTypeObj, el, block.color);
@@ -305,12 +309,14 @@ function createAtomicInput(block) {
 function renderAtomicBlock(block) {
     const el = document.createElement("div");
     initBlockElement(block, el);
-    el.classList.add("atomic-block-" + block.typeObj.name);
+    el.classList.add("atomic-block-" + toDomSafe(block.typeObj.name));
+    el.style.minWidth = "100px";
     addBlockName(el, block.typeObj.name);
 
     let inputContainer = createAtomicInput(block);
     inputContainer.style.position = "absolute";
-    inputContainer.style.right = "10px";
+    inputContainer.style.left = "45px";
+    inputContainer.style.right = "auto";
     inputContainer.style.top = "30px";
     el.appendChild(inputContainer);
 
@@ -332,4 +338,26 @@ export function renderBlock(block) {
     if (block instanceof ConstructorBlock) return renderConstructorBlock(block);
     if (block instanceof AtomicBlock) return renderAtomicBlock(block);
     throw new Error("Unknown block type for render");
+}
+
+/**
+ * Refreshes cached label measurements after the block is attached to DOM.
+ * @param {DefinitionBlock|ConstructorBlock|AtomicBlock} block
+ */
+export function refreshBlockMeasurements(block) {
+    if (block.dotObject && block.dotObject.element) {
+        const label = block.dotObject.element.querySelector("div");
+        if (label) {
+            block.dotObject.dotLabelWidth = label.offsetWidth;
+        }
+    }
+
+    if (block.plugObjects && block.plugObjects.length > 0) {
+        block.plugObjects.forEach(plug => {
+            if (!plug.element) return;
+            const label = plug.element.querySelector("div");
+            const labelWidth = label ? label.offsetWidth : 0;
+            plug.width = labelWidth + plug.element.offsetWidth;
+        });
+    }
 }
