@@ -148,6 +148,9 @@ export function openLocalBlockSettings(block, store, printAlert) {
             // Param structure: { "A": "value" } or { "A": null }
             const typeKey = Object.keys(param)[0];
             const storedValue = param[typeKey];
+            const storedValueLabel = storedValue && typeof storedValue === "object"
+                ? formatType(storedValue)
+                : storedValue;
 
             let rowDiv = document.createElement("div");
             rowDiv.className = "d-flex align-items-center mb-3";
@@ -168,7 +171,7 @@ export function openLocalBlockSettings(block, store, printAlert) {
                 option.value = optVal;
                 option.innerText = optVal === "" ? "-- Select type --" : optVal;
 
-                if (storedValue === optVal) {
+                if (storedValueLabel === optVal) {
                     option.selected = true;
                 }
                 paramSelect.appendChild(option);
@@ -320,3 +323,4 @@ function getAvailableTypes(block, typeParameters, store) {
         smartSuggestionsMap: smartSuggestionsMap
     };
 }
+
